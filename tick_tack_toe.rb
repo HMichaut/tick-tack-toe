@@ -1,92 +1,131 @@
+# Importing the unit test library
+require "test/unit/assertions"
+include Test::Unit::Assertions
 
+# variable initialization
+turn = 'cross'
+game_board = Array.new(3) { Array.new(3 , ".")}
+game_over = false
 
+# Array -> Boolean
+# Consumes an array and returns a boolean informing if the situation is a 
+# game over
+def check_if_game_over(input_array)
+  check_lines(input_array) || check_diagonals(input_array)
+end
+
+# Array -> Boolean
+# Consumes an array and returns a boolean informing if the lines are in a game 
+# over situation
+def check_lines(input_array)
+  (0..2).each do |row|
+    if input_array.select {|item| item[0] == row}.length == 3
+      return true
+    end
+  end
+  (0..2).each do |column|
+    if input_array.select {|item| item[1] == column}.length == 3
+      return true
+    end
+  end
+  false
+end
+
+# Array -> Boolean
+# Consumes an array and returns a boolean informing if the diagonals are in a 
+# game over situation
+def check_diagonals(input_array)
+  if input_array.select {|item| item[0] == item[1]}.length == 3
+    return true
+  elsif input_array.select {|item| item[0] + item[1] == 2}.length == 3
+    return true
+  end
+  false
+end
+
+# Array -> Boolean
+# Create a new play according to the player choice
+def play(turn, game_board)
+  x_value = gets.chomp.to_i
+  y_value = gets.chomp.to_i
+  if turn == 'cross'
+    Cross.new(x_value, y_value)
+    game_board[x_value][y_value] = 'X'
+    puts "Cross plays posn x : #{x_value} posn y: #{y_value}"
+  elsif turn == 'circle'
+    Circle.new(x_value, y_value)
+    game_board[x_value][y_value] = 'O'
+    puts "Circle plays posn x : #{x_value} posn y: #{y_value}"
+  end
+end
+
+# Represent players class
 class Players
   @@cross_posn_array = []
   @@circle_posn_array = []
-  @@turn = 'cross'
-  @@game_board = Array.new(3) { Array.new(3 , ".")}
-  @@game_over = false
+  
+  # Reader function for class variable
+  def self.return_cross_posn_array
+    @@cross_posn_array 
+  end
+
+  # Reader function for class variable
+  def self.return_circle_posn_array
+    @@circle_posn_array 
+  end
+
+  # Basic initialize function for both players
   def initialize(posn_x, posn_y)
     @posn_x = posn_x
     @posn_y = posn_y
   end
-
-  def self.returns_game_board
-    return @@game_board
-  end
-
-  def self.returns_game_status
-    return @@game_over
-  end
-
-  def self.check_if_game_over(input_array)
-    Players.check_lines(input_array) || Players.check_diagonals(input_array)
-  end
-
-  def self.check_lines(input_array)
-    (0..2).any? do |prim_iter|
-      (0..2).all? {|second_iter| input_array.include?([second_iter, prim_iter])}
-    end
-  end
-
-  def self.check_diagonals(input_array)
-    false
-    #(0..2).all? {|prim_iter| input_array.include?([prim_iter, prim_iter])} || (0..2).all? {|prim_iter| @cross_posn_array.include?([prim_iter, 2 - prim_iter])}
-  end
-
-  def self.play
-    if @@turn == 'cross'
-      x_value = gets.chomp.to_i
-      y_value = gets.chomp.to_i
-      if !(@@cross_posn_array + @@circle_posn_array).include?([x_value, y_value])
-        Cross.new(x_value, y_value)
-        @@game_over = Cross.check_if_game_over_cross
-        @@turn = 'circle'
-        puts 
-      else
-        puts 'Wrong input, please try again.'
-      end
-    elsif @@turn == 'circle'
-      x_value = gets.chomp.to_i
-      y_value = gets.chomp.to_i
-      if !(@@cross_posn_array + @@circle_posn_array).include?([x_value, y_value])
-        Circle.new(x_value, y_value)
-        @@game_over = Circle.check_if_game_over_circle
-        @@turn = 'cross'
-      else
-        puts 'Wrong input, please try again.'
-      end
-    end
-  end
 end
 
+# Specific class for cross player
 class Cross < Players
+
+  # Specific initialize function for cross players
   def initialize(posn_x, posn_y)
     super
     @@cross_posn_array.push([posn_x, posn_y])
-    @@game_board[posn_y][posn_x] = 'X'
-  end
-
-  def self.check_if_game_over_cross
-    check_if_game_over(@@cross_posn_array)
   end
 end
 
+# Specific class for circle player
 class Circle < Players
+  # Specific initialize function for cross players
   def initialize(posn_x, posn_y)
     super
     @@circle_posn_array.push([posn_x, posn_y])
-    @@game_board[posn_y][posn_x] = 'O'
-  end
-
-  def self.check_if_game_over_circle
-    check_if_game_over(@@circle_posn_array)
   end
 end
 
-while !Players.returns_game_status
-  Players.play
-  game_board_extract = Players.returns_game_board
-  width = game_board_extract.flatten.max.to_s.size+2
-  puts game_board_extract.map { |a| a.map { |i| i.to_s.rjust(width) }.join }
+# Game loop, will stop if in game over situation.
+until game_over
+  play(turn, game_board)
+  if turn == 'circle'
+    turn = 'cross'
+    game_over = check_if_game_over(Players.return_circle_posn_array)
+  elsif turn == 'cross'
+    turn = 'circle'
+    game_over = check_if_game_over(Players.return_cross_posn_array)
+  end
+  width = game_board.flatten.max.to_s.size+2
+  puts (game_board.transpose.reverse.map { |a| a.map { |i| i.to_s.rjust(width) }.join })
 end
+puts 'GAME OVER!'
+
+assert_equal check_lines([[0,0],[0,1],[0,2]]), true
+assert_equal check_lines([[0,0],[1,0],[2,0]]), true
+assert_equal check_lines([[0,0],[1,1],[2,2]]), false
+
+assert_equal check_diagonals([[0,0],[1,1],[2,2]]), true
+assert_equal check_diagonals([[0,2],[1,1],[2,0]]), true
+assert_equal check_diagonals([[0,0],[0,1],[0,2]]), false
+
+assert_equal check_if_game_over([[0,0],[1,1],[2,2]]), true
+assert_equal check_if_game_over([[0,2],[1,1],[2,0]]), true
+assert_equal check_if_game_over([[0,0],[0,1]]), false
+assert_equal check_if_game_over([[0,0],[0,1],[0,2]]), true
+assert_equal check_if_game_over([[0,0],[1,0],[2,0]]), true
+assert_equal check_if_game_over([[1,1],[2,2]]), false
