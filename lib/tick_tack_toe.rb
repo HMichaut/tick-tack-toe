@@ -1,6 +1,4 @@
-# Importing the unit test library
-require "test/unit/assertions"
-include Test::Unit::Assertions
+# frozen_string_literal: true
 
 # variable initialization
 turn = 'cross'
@@ -63,7 +61,6 @@ end
 class Players
   @@cross_posn_array = []
   @@circle_posn_array = []
-  
   # Reader function for class variable
   def self.return_cross_posn_array
     @@cross_posn_array 
@@ -111,21 +108,6 @@ until game_over
     game_over = check_if_game_over(Players.return_cross_posn_array)
   end
   width = game_board.flatten.max.to_s.size+2
-  puts (game_board.transpose.reverse.map { |a| a.map { |i| i.to_s.rjust(width) }.join })
+  puts(game_board.transpose.reverse.map { |a| a.map { |i| i.to_s.rjust(width) }.join })
 end
 puts 'GAME OVER!'
-
-assert_equal check_lines([[0,0],[0,1],[0,2]]), true
-assert_equal check_lines([[0,0],[1,0],[2,0]]), true
-assert_equal check_lines([[0,0],[1,1],[2,2]]), false
-
-assert_equal check_diagonals([[0,0],[1,1],[2,2]]), true
-assert_equal check_diagonals([[0,2],[1,1],[2,0]]), true
-assert_equal check_diagonals([[0,0],[0,1],[0,2]]), false
-
-assert_equal check_if_game_over([[0,0],[1,1],[2,2]]), true
-assert_equal check_if_game_over([[0,2],[1,1],[2,0]]), true
-assert_equal check_if_game_over([[0,0],[0,1]]), false
-assert_equal check_if_game_over([[0,0],[0,1],[0,2]]), true
-assert_equal check_if_game_over([[0,0],[1,0],[2,0]]), true
-assert_equal check_if_game_over([[1,1],[2,2]]), false
